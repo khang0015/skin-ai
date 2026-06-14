@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skin-ai-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-skin_ai_user}:${POSTGRES_PASSWORD:-change_this_password}@postgres:5432/${POSTGRES_DB:-skin_ai}
+      UPLOAD_DIR: /app/backend/uploads
+      RAG_DOCS_DIR: /app/backend/app/data/docs/raw
+      RAG_VECTOR_STORE_PATH: /app/backend/app/data/vector_store
+      RAG_EMBEDDING_CACHE_DIR: /app/backend/models/embeddings
+    ports:
+      - "127.0.0.1:8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./backend/uploads:/app/backend/uploads
+      - ./backend/app/data/docs/raw:/app/backend/app/data/docs/raw
+      - ./backend/app/data/vector_store:/app/backend/app/data/vector_store
+      - ./backend/models:/app/backend/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    container_name: skin-ai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-skin_ai_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password}
+      POSTGRES_DB: ${POSTGRES_DB:-skin_ai}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-skin_ai_user} -d ${POSTGRES_DB:-skin_ai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

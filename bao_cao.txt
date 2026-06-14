@@ -1,0 +1,80 @@
+Tên đề tài: Xây dựng ứng dụng hỗ trợ chẩn đoán bệnh da liễu
+Pipeline:
+
+Input image -> Bộ phát hiện da (Nếu không phải da thì kết thúc pipeline) -> Yolo Detection -> Đi qua CNN classifier -> Tên bệnh-> RAG Pipeline -> Generated Response
+
+Tôi đã làm : Yolo v8, Yolo V11. Classifier là mô hình VGG16+Vision Transformer tham khảo từ https://arxiv.org/abs/2207.07919
+
+Tham khảo cả code để xem cái gì thì trình bày trong báo cáo.
+
+
+Chú ý tham khảo các tài liệu để ghi vào báo cáo luôn.
+Hạn chế viết tắt, sử dụng tiếng việt tốt đa.
+hạn chế gạch đầu dòng (không phải là hạn chế tuyệt đối)
+
+.
+Mẫu báo cáo:
+Chương 1: TỔNG QUAN VỀ XXXXXXXX {font: TimeNew Roman, bolt, size: 14, căn lề: center}
+{Để 2 dòng trống}
+
+1.1.	Mục 1.1		{Font: Time New Roman; đậm; cỡ chữ: 13; dãn dòng: 1,3; căn lề: justified}
+1.1.1.	Tiểu mục 1.1.1	{Font: Time New Roman; đậm & nghiêng; cỡ chữ: 13; dãn dòng: 1,3; căn lề: justified}
+	Nội dung A {Font: Time New Roman; thường; cỡ chữ: 13; dãn dòng: 1,3; căn lề: justified}
+…………………………………………………………………………………………...
+1.1.2.	Tiểu mục 1.1.2
+	Nội dung B.
+…………………………………………………………………………………………...
+1.2.	Mục 1.2
+1.2.1.	Tiểu mục 1.2.1	
+	Nội dung C.
+Bảng 1.2 Tính năng kỹ thuật của X {Font: Time New Roman; thường; cỡ chữ: 13; dãn dòng: 1,3; căn lề: center}
+				
+				
+				
+
+…………………………………………………………………………………………...
+…………………………………………………………………………………………...
+…………………………………………………………………………………………...
+
+
+Hình 1.1 Đặc tính của M ở chế độ làm việc C {Font: Time New Roman; thường; cỡ chữ: 13; dãn dòng: 1,3; căn lề: center}
+…………………………………………………………………………………………...
+…………………………………………………………………………………………...
+…………………………………………………………………………………………...
+1.2.2.	Tiểu mục 1.2.2	
+	Nội dung D.
+…………………………………………………………………………………………...
+1.3.	Mục 1.2
+1.3.1.	Tiểu mục 1.2.1	
+	Nội dung E. 
+…………………………………………………………………………………………...
+
+
+
+
+
+
+Ghi chú về trình bày mỗi trang của đồ án
+
+-	Page layout: cỡ giấy A4; lề trái: 3cm, lề phải: 2cm, lề trên: 2,5cm, lề dưới: 2,5cm; header và footer: from edge: 1,6cm;
+-	Đánh số trang: bắt đầu đánh số trang từ phần “MỞ ĐẦU”;
+-	Tiêu đề chương, mục, tiểu mục: xem chi tiết như minh họa ở trên;
+-	Mục Header: Tên đề tài (định dạng: font Time New Roman, Italic, size 10, căn lề: giữa);
+-	Mục Footer: Sinh viên thực hiện, giảng viên hướng dẫn, đánh số trang (định dạng: font Time New Roman, size 10);
+-	Chú dẫn bảng: nằm trên bảng, đánh số theo chương và số lũy tiến theo số thứ tự của bảng trong chương;
+-	Chú dẫn hình: nằm dưới hình, đánh số theo chương và số lũy tiến theo số thứ tự của hình trong chương;
+-	Đánh số công thức: bên phải công thức, đánh số theo chương và số lũy tiến theo số thứ tự của công thức trong chương;
+-	Nên sử dụng các chức năng về Bookmark, Caption, Cross-Reference, Format Heading,… của Microsoft Word hoặc các phần mềm soạn thảo tương tự; cần tổ chức theo dạng “Long Document”.
+
+
+
+ 
+KẾT LUẬN {size 14}
+{Để 2 dòng trống}
+
+	Nội dung kết luận {Font: Time New Roman; thường; cỡ chữ: 13; dãn dòng: 1,3; căn lề: justified}
+…………………………………………………………………………………………...
+…………………………………………………………………………………………...
+…………………………………………………………………………………………...
+…………………………………………………………………………………………...
+

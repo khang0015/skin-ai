@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+
+# SSH keys — never commit
+*.pem
+*.key
+*.ppk
+
+# IDE
+.vscode/
+.idea/
+
+# Runtime artifacts
+*.log
+tmp/
+uploads/
+backend/app/data/vector_store/
+
+# Model weights (keep local)
+backend/models/*.pt
+backend/models/*.h5
+backend/models/*.keras
+backend/models/*.onnx
+backend/models/embeddings/
+!backend/models/.gitkeep
+
+# Frontend
+frontend/node_modules/
+
+node_modules/
+dist/
+build/
+.DS_Store
+

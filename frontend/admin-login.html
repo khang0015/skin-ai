@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login</title>
+    <style>
+      :root {
+        --green: #16a34a;
+        --green-dark: #15803d;
+        --green-soft: #dcfce7;
+        --text: #111827;
+        --border: #d1d5db;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: var(--text);
+        background: #f3f4f6;
+      }
+
+      form {
+        width: min(320px, calc(100% - 32px));
+        display: grid;
+        gap: 14px;
+        padding: 34px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 16px 35px rgba(17, 24, 39, 0.08);
+      }
+
+      label {
+        margin-bottom: 14px;
+        text-align: center;
+        font-size: 24px;
+        line-height: 1.15;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      input {
+        width: 100%;
+        height: 48px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 16px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.18s, box-shadow 0.18s;
+      }
+
+      input:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 4px var(--green-soft);
+      }
+
+      button {
+        height: 48px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffffff;
+        background: var(--green);
+        cursor: pointer;
+        transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+      }
+
+      button:hover {
+        background: var(--green-dark);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      .error {
+        display: none;
+        margin: 0;
+        font-size: 14px;
+        color: #b42318;
+      }
+
+      body.has-error .error {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <form method="post" action="/admin/login">
+      <label for="password">Admin Login</label>
+      <input id="password" name="password" type="password" placeholder="Enter passkey" autocomplete="current-password" autofocus />
+      <button type="submit">Login</button>
+      <p class="error">Mat khau khong dung.</p>
+    </form>
+    <script>
+      if (new URLSearchParams(window.location.search).get("error") === "1") {
+        document.body.classList.add("has-error");
+      }
+    </script>
+  </body>
+</html>

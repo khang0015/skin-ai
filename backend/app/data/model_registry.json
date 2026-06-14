@@ -1,0 +1,42 @@
+{
+  "detectors": {
+    "yolo8s_best": {
+      "kind": "ultralytics_yolo",
+      "model_path": "backend/models/yolov8s.pt"
+    },
+    "yolo11s_best": {
+      "kind": "ultralytics_yolo",
+      "model_path": "backend/models/yolov11s.pt"
+    }
+  },
+  "classifiers": {
+    "gpt_vision": {
+      "kind": "openai_vision",
+      "model": "gpt-5.4"
+    },
+    "vgg_vit": {
+      "kind": "pytorch_checkpoint",
+      "model_path": "backend/models/VGG_ViT.pth",
+      "input_size": 224,
+      "mean": [0.485, 0.456, 0.406],
+      "std": [0.229, 0.224, 0.225],
+      "class_names": [
+        "actinic keratosis (Bowen's disease)",
+        "basal cell carcinoma",
+        "benign keratosis",
+        "dermatofibroma",
+        "melanoma",
+        "melanocytic nevus",
+        "vascular lesion"
+      ],
+      "model_factory": "backend.app.models.vgg_vit:create_model"
+    }
+  },
+  "pipelines": {
+    "default": {
+      "detector": "yolo8s_best",
+      "classifier": "gpt_vision",
+      "classifier_input": "full"
+    }
+  }
+}

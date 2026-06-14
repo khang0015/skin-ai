@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Pipeline — Cấu hình hệ thống</title>
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <header>
+        <div>
+          <h1>
+            <span class="header-icon">⚙</span>
+            Quản lý Pipeline
+          </h1>
+          <p>Cấu hình detector, classifier và LLM cho hệ thống.</p>
+        </div>
+        <a href="/" class="back-link">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2Z" fill="currentColor"/></svg>
+          Về chat
+        </a>
+      </header>
+
+      <p id="statusText" class="status"></p>
+
+      <!-- Active pipeline banner -->
+      <section class="panel active-pipeline-panel">
+        <div class="panel-header">
+          <div class="panel-icon active-icon">🎯</div>
+          <div>
+            <h2>Pipeline đang dùng</h2>
+            <p class="panel-desc">Cấu hình mặc định cho phân tích ảnh da liễu</p>
+          </div>
+        </div>
+        <div class="active-cards">
+          <div class="active-card">
+            <div class="active-label">Detector</div>
+            <div class="active-value" id="activeDetector">—</div>
+          </div>
+          <div class="active-card">
+            <div class="active-label">Classifier</div>
+            <div class="active-value" id="activeClassifier">—</div>
+          </div>
+          <div class="active-card">
+            <div class="active-label">Classifier input</div>
+            <div class="active-value" id="activeInputMode">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Configure default pipeline -->
+      <section class="panel config-panel">
+        <div class="panel-header">
+          <div class="panel-icon config-icon">🔧</div>
+          <div>
+            <h2>Thay đổi pipeline</h2>
+            <p class="panel-desc">Chọn detector + classifier + chế độ input. Lưu xong áp dụng ngay, không cần restart.</p>
+          </div>
+        </div>
+        <div class="config-grid">
+          <label class="config-field">
+            <span class="field-label">Detector</span>
+            <select id="detectorSelect"></select>
+          </label>
+          <label class="config-field">
+            <span class="field-label">Classifier</span>
+            <select id="classifierSelect"></select>
+          </label>
+          <label class="config-field">
+            <span class="field-label">Classifier input</span>
+            <select id="classifierInputSelect"></select>
+          </label>
+          <div class="config-actions">
+            <button id="saveDefaultBtn" class="btn-primary" type="button">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17Z" fill="currentColor"/></svg>
+              Lưu pipeline
+            </button>
+            <button id="resetDefaultBtn" class="btn-secondary" type="button" title="Khôi phục cấu hình từ model_registry.json (xóa cấu hình stale trong DB)">
+              ↻ Khôi phục mặc định
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Knowledge documents -->
+      <section class="panel knowledge-panel">
+        <div class="panel-header">
+          <div class="panel-icon knowledge-icon">📄</div>
+          <div>
+            <h2>Upload tài liệu tri thức</h2>
+            <p class="panel-desc">Thêm tài liệu mới vào knowledge base. Sau khi upload, vector database được refresh ngay.</p>
+          </div>
+        </div>
+        <div class="knowledge-upload">
+          <label class="config-field knowledge-file-field">
+            <span class="field-label">Tài liệu hỗ trợ: .md, .txt, .pdf, .docx</span>
+            <input id="knowledgeFileInput" type="file" accept=".md,.txt,.pdf,.docx" />
+          </label>
+          <button id="uploadKnowledgeBtn" class="btn-primary" type="button">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 20h14v-2H5v2Zm7-18-5.5 5.5 1.42 1.42L11 5.83V16h2V5.83l3.08 3.09 1.42-1.42L12 2Z" fill="currentColor"/></svg>
+            Upload và index
+          </button>
+        </div>
+        <p class="llm-note" id="knowledgeUploadNote"></p>
+      </section>
+
+      <!-- LLM Backend -->
+      <section class="panel llm-panel">
+        <div class="panel-header">
+          <div class="panel-icon llm-icon">🤖</div>
+          <div>
+            <h2>RAG LLM Backend</h2>
+            <p class="panel-desc">Mô hình ngôn ngữ sinh câu trả lời từ knowledge base</p>
+          </div>
+        </div>
+
+        <div class="active-cards">
+          <div class="active-card">
+            <div class="active-label">Backend đang dùng</div>
+            <div class="active-value" id="llmActiveBackend">—</div>
+          </div>
+          <div class="active-card">
+            <div class="active-label">OpenAI</div>
+            <div class="active-value" id="llmOpenAIStatus">—</div>
+            <div class="active-meta" id="llmOpenAIModel"></div>
+          </div>
+          <div class="active-card">
+            <div class="active-label">Ollama (Qwen)</div>
+            <div class="active-value" id="llmOllamaStatus">—</div>
+            <div class="active-meta" id="llmOllamaModel"></div>
+          </div>
+        </div>
+
+        <div class="config-grid" style="margin-top:1.2rem">
+          <label class="config-field">
+            <span class="field-label">Chọn LLM backend</span>
+            <select id="llmBackendSelect">
+              <option value="auto">auto — Ollama nếu có, không thì OpenAI</option>
+              <option value="openai">openai — Luôn dùng OpenAI GPT</option>
+              <option value="ollama">ollama — Luôn dùng Qwen (Azure VM)</option>
+            </select>
+          </label>
+          <div class="config-actions">
+            <button id="saveLLMBtn" class="btn-primary" type="button">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17Z" fill="currentColor"/></svg>
+              Lưu LLM backend
+            </button>
+          </div>
+        </div>
+        <p class="llm-note" id="llmNote"></p>
+      </section>
+    </main>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

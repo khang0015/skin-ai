@@ -1,0 +1,3 @@
+model,loss,accuracy,macro_f1
+VGG16+Inception+ViT,0.7857,0.876,0.749
+VGG16+Inception+ViT_v4,0.2256,0.87,0.764

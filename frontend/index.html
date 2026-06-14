@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trợ lý da liễu AI</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="stylesheet" href="style.css?v=no-detection-20260614" />
+  </head>
+  <body>
+    <main class="chat-app">
+      <aside class="sidebar" aria-label="Thông tin cuộc trò chuyện">
+        <!-- Brand header -->
+        <div class="sidebar-top">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="">
+              <img src="/logo.png" alt="Logo" />
+            </span>
+            <div>
+              <strong>Trợ lý da liễu AI</strong>
+              <span>Phân tích ảnh và hỏi đáp</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat history (main area, scrollable) -->
+        <div class="history-section">
+          <div class="history-header">
+            <span class="history-title">Lịch sử trò chuyện</span>
+            <button id="refreshConversationsBtn" type="button" class="refresh-btn" title="Làm mới">↻</button>
+          </div>
+          <div class="search-wrap">
+            <input id="searchInput" type="search" placeholder="Tìm cuộc trò chuyện..." autocomplete="off" />
+          </div>
+          <div id="conversationList" class="conversation-list"></div>
+        </div>
+
+        <!-- Bottom section -->
+        <!-- <div class="sidebar-bottom">
+          <div class="sidebar-links">
+            <a class="admin-link" href="/admin">
+              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81a.47.47 0 0 0-.47-.41h-3.85c-.24 0-.44.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.47.41h3.85c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z" fill="currentColor"/></svg>
+              Admin pipeline
+            </a>
+          </div>
+        </div> -->
+      </aside>
+      <button id="sidebarOverlay" class="sidebar-overlay" type="button" aria-label="Close chat history"></button>
+
+      <section class="conversation" aria-label="Cuộc trò chuyện">
+        <header class="chat-header">
+          <div class="mobile-chat-brand">
+            <span class="mobile-brand-mark" aria-hidden="true">
+              <img src="/logo.png" alt="" />
+            </span>
+            <div>
+              <strong>Cuộc trò chuyện</strong>
+              <span>Trợ lý da liễu AI</span>
+            </div>
+          </div>
+          <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" type="button" aria-label="Open chat history">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z" fill="currentColor"/>
+            </svg>
+          </button>
+          <div class="chat-title">
+            <h1>Cuộc trò chuyện</h1>
+            <p>Gửi câu hỏi, mô tả triệu chứng hoặc đính kèm ảnh vùng da cần kiểm tra.</p>
+          </div>
+          <button id="newChatBtn" class="ghost-btn" type="button">Cuộc trò chuyện mới</button>
+        </header>
+
+        <div id="messages" class="messages" aria-live="polite">
+          <article class="message assistant" data-welcome="true">
+            <div class="avatar" aria-hidden="true">AI</div>
+            <div class="bubble">
+              <p>Chào bạn. Bạn có thể mô tả triệu chứng hoặc gửi ảnh vùng da cần phân tích.</p>
+            </div>
+          </article>
+        </div>
+
+        <footer class="composer-wrap">
+          <div id="attachmentPreview" class="attachment-preview" hidden></div>
+          <form id="chatForm" class="composer">
+            <button id="attachBtn" class="circle-btn" type="button" aria-label="Tải ảnh lên">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"></path>
+              </svg>
+            </button>
+            <input id="imageInput" type="file" accept="image/*" hidden />
+            <textarea
+              id="messageInput"
+              rows="1"
+              placeholder="Nhắn tin cho trợ lý da liễu AI..."
+              autocomplete="off"
+            ></textarea>
+            <button id="sendBtn" class="send-btn" type="submit" aria-label="Gửi tin nhắn">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="M12 4 5 11l1.4 1.4L11 7.8V20h2V7.8l4.6 4.6L19 11l-7-7Z"></path>
+              </svg>
+            </button>
+          </form>
+        </footer>
+      </section>
+    </main>
+    <!-- Custom Modal -->
+    <div id="modalOverlay" class="modal-overlay" hidden>
+      <div class="modal-card">
+        <h2 id="modalTitle" class="modal-title"></h2>
+        <p id="modalBody" class="modal-body"></p>
+        <input id="modalInput" class="modal-input" type="text" hidden />
+        <div class="modal-actions">
+          <button id="modalCancel" class="modal-btn modal-btn-cancel" type="button">Hủy</button>
+          <button id="modalConfirm" class="modal-btn modal-btn-confirm" type="button">Xác nhận</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js?v=no-detection-20260614"></script>
+  </body>
+</html>

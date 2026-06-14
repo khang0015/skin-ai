@@ -1,0 +1,13 @@
+.git
+.venv
+__pycache__
+*.pyc
+.env
+logs
+rendered_*
+*.ipynb
+*.docx
+~$*
+backend/uploads
+backend/app/data/vector_store
+backend/models/embeddings
