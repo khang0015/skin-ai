@@ -102,6 +102,9 @@ Focus on the main symptoms, diagnoses discussed, and key advice given.
 
 Summary:"""
 
+RAG_MAIN_MAX_TOKENS = int(os.getenv("RAG_MAIN_MAX_TOKENS", "2500"))
+RAG_NO_CONTEXT_MAX_TOKENS = int(os.getenv("RAG_NO_CONTEXT_MAX_TOKENS", "2000"))
+
 
 def _is_unsupported_param_error(exc: Exception, param_name: str) -> bool:
     message = str(exc)
@@ -792,7 +795,7 @@ class RAGService:
                         {"role": "system", "content": RAG_SYSTEM_PROMPT},
                         {"role": "user", "content": user_prompt},
                     ],
-                    max_tokens=900,
+                    max_tokens=RAG_MAIN_MAX_TOKENS,
                     temperature=0.2,
                 )
             elif self.openai_model.lower().startswith("gpt-5"):
@@ -815,7 +818,8 @@ class RAGService:
             model=self.openai_model,
             instructions=RAG_SYSTEM_PROMPT,
             input=user_prompt,
-            max_output_tokens=1500,
+            max_output_tokens=RAG_MAIN_MAX_TOKENS,
+            stream=False,
         )
         output_text = getattr(response, "output_text", None)
         if isinstance(output_text, str) and output_text.strip():
@@ -835,14 +839,19 @@ class RAGService:
                 {"role": "system", "content": RAG_SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
+            "stream": False,
         }
         try:
-            response = client.chat.completions.create(**request_kwargs, max_tokens=900)
+            response = client.chat.completions.create(
+                **request_kwargs,
+                max_tokens=RAG_MAIN_MAX_TOKENS,
+            )
         except Exception as first_exc:
             if not _is_unsupported_param_error(first_exc, "max_tokens"):
                 raise
             response = client.chat.completions.create(
-                **request_kwargs, max_completion_tokens=900,
+                **request_kwargs,
+                max_completion_tokens=RAG_MAIN_MAX_TOKENS,
             )
         content = response.choices[0].message.content
         return content.strip() if content else ""
@@ -891,7 +900,7 @@ class RAGService:
                         {"role": "system", "content": RAG_NO_CONTEXT_SYSTEM_PROMPT},
                         {"role": "user", "content": user_prompt},
                     ],
-                    max_tokens=350,
+                    max_tokens=RAG_NO_CONTEXT_MAX_TOKENS,
                     temperature=0.3,
                 )
                 return self._strip_no_context_notice(answer)
@@ -902,7 +911,8 @@ class RAGService:
                     model=self.openai_model,
                     instructions=RAG_NO_CONTEXT_SYSTEM_PROMPT,
                     input=user_prompt,
-                    max_output_tokens=700,
+                    max_output_tokens=RAG_NO_CONTEXT_MAX_TOKENS,
+                    stream=False,
                 )
                 output_text = getattr(response, "output_text", None)
                 if isinstance(output_text, str) and output_text.strip():
@@ -922,14 +932,19 @@ class RAGService:
                     {"role": "system", "content": RAG_NO_CONTEXT_SYSTEM_PROMPT},
                     {"role": "user", "content": user_prompt},
                 ],
+                "stream": False,
             }
             try:
-                response = client.chat.completions.create(**request_kwargs, max_tokens=500)
+                response = client.chat.completions.create(
+                    **request_kwargs,
+                    max_tokens=RAG_NO_CONTEXT_MAX_TOKENS,
+                )
             except Exception as first_exc:
                 if not _is_unsupported_param_error(first_exc, "max_tokens"):
                     raise
                 response = client.chat.completions.create(
-                    **request_kwargs, max_completion_tokens=500,
+                    **request_kwargs,
+                    max_completion_tokens=RAG_NO_CONTEXT_MAX_TOKENS,
                 )
             content = response.choices[0].message.content
             return self._strip_no_context_notice(content or "")
