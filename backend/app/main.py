@@ -25,6 +25,9 @@ from .db.session import get_db, init_db, is_database_configured
 from .ml.pipeline import AnalysisPipelineRunner
 from .ml.registry import ModelRegistry
 from .schemas import (
+    AdminChatHistoryPage,
+    AdminConversationDetail,
+    AdminConversationItem,
     AnalyzeResponse,
     AskRequest,
     AskResponse,
@@ -790,6 +793,59 @@ async def upload_knowledge_document(file: UploadFile = File(...)) -> dict:
         "indexed_chunks": indexed_chunks,
         "docs_dir": str(RAG_DOCS_DIR),
     }
+
+
+@app.get("/api/admin/chat-history", response_model=AdminChatHistoryPage)
+def list_admin_chat_history(
+    page: int = 1,
+    per_page: int = 20,
+    db: Session = Depends(get_db),
+) -> AdminChatHistoryPage:
+    """Return paginated chat conversations for the admin page."""
+    ensure_database(db)
+    page = max(1, page)
+    per_page = min(max(1, per_page), 100)
+    total = db_service.count_admin_conversations(db)
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    if total and page > total_pages:
+        page = total_pages
+
+    items = db_service.list_admin_conversations(
+        db,
+        limit=per_page,
+        offset=(page - 1) * per_page,
+    )
+    return AdminChatHistoryPage(
+        items=[
+            AdminConversationItem(**db_service.admin_conversation_to_dict(item, message_count))
+            for item, message_count in items
+        ],
+        page=page,
+        per_page=per_page,
+        total=total,
+        total_pages=total_pages,
+    )
+
+
+@app.get("/api/admin/chat-history/{conversation_id}", response_model=AdminConversationDetail)
+def get_admin_chat_history_detail(
+    conversation_id: str,
+    db: Session = Depends(get_db),
+) -> AdminConversationDetail:
+    """Return a full chat transcript for an admin modal."""
+    ensure_database(db)
+    conversation_row = db_service.get_admin_conversation(db, conversation_id)
+    if conversation_row is None:
+        raise HTTPException(status_code=404, detail="Conversation not found.")
+
+    conversation, message_count = conversation_row
+    messages = db_service.list_messages(db, conversation_id)
+    return AdminConversationDetail(
+        conversation=AdminConversationItem(
+            **db_service.admin_conversation_to_dict(conversation, message_count)
+        ),
+        messages=[MessageItem(**db_service.message_to_dict(item)) for item in messages],
+    )
 
 
 # ── LLM backend admin (no token required, same as config) ───────────

@@ -63,6 +63,23 @@ class MessageItem(BaseModel):
     created_at: str
 
 
+class AdminConversationItem(ConversationItem):
+    message_count: int = 0
+
+
+class AdminChatHistoryPage(BaseModel):
+    items: list[AdminConversationItem]
+    page: int
+    per_page: int
+    total: int
+    total_pages: int
+
+
+class AdminConversationDetail(BaseModel):
+    conversation: AdminConversationItem
+    messages: list[MessageItem]
+
+
 class ChatRequest(ClientRequest):
     message: str = Field(min_length=1)
     conversation_id: str | None = None

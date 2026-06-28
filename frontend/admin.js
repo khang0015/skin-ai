@@ -24,7 +24,23 @@ const knowledgeDropzone = document.getElementById("knowledgeDropzone");
 const uploadKnowledgeBtn = document.getElementById("uploadKnowledgeBtn");
 const knowledgeUploadNote = document.getElementById("knowledgeUploadNote");
 
+const chatHistoryList = document.getElementById("chatHistoryList");
+const chatHistoryTotal = document.getElementById("chatHistoryTotal");
+const chatHistoryPageInfo = document.getElementById("chatHistoryPageInfo");
+const chatHistoryPager = document.getElementById("chatHistoryPager");
+const chatHistoryPrevBtn = document.getElementById("chatHistoryPrevBtn");
+const chatHistoryNextBtn = document.getElementById("chatHistoryNextBtn");
+const refreshChatHistoryBtn = document.getElementById("refreshChatHistoryBtn");
+const chatHistoryModal = document.getElementById("chatHistoryModal");
+const closeChatHistoryModalBtn = document.getElementById("closeChatHistoryModalBtn");
+const chatHistoryModalTitle = document.getElementById("chatHistoryModalTitle");
+const chatHistoryModalMeta = document.getElementById("chatHistoryModalMeta");
+const chatHistoryMessages = document.getElementById("chatHistoryMessages");
+
 let selectedKnowledgeFile = null;
+let chatHistoryPage = 1;
+let chatHistoryTotalPages = 1;
+const CHAT_HISTORY_PER_PAGE = 20;
 
 const API_ORIGINS = [
   "",
@@ -72,6 +88,37 @@ function setStatus(message, isError = false) {
       }
     }, 4000);
   }
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatDateTime(value) {
+  if (!value) {
+    return "-";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function summarizeText(value, maxLength = 150) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return `${text.slice(0, maxLength - 1)}...`;
 }
 
 function fillSelect(select, items, current) {
@@ -264,6 +311,146 @@ uploadKnowledgeBtn.addEventListener("click", async () => {
   }
 });
 
+function renderChatHistory(data) {
+  chatHistoryPage = data.page || 1;
+  chatHistoryTotalPages = data.total_pages || 1;
+
+  chatHistoryTotal.textContent = `${data.total || 0} đoạn chat`;
+  chatHistoryPageInfo.textContent = `Trang ${chatHistoryPage}/${chatHistoryTotalPages}`;
+  chatHistoryPager.textContent = `Trang ${chatHistoryPage}`;
+  chatHistoryPrevBtn.disabled = chatHistoryPage <= 1;
+  chatHistoryNextBtn.disabled = chatHistoryPage >= chatHistoryTotalPages;
+
+  const items = data.items || [];
+  if (!items.length) {
+    chatHistoryList.innerHTML = `<p class="chat-history-empty">Chưa có đoạn chat nào.</p>`;
+    return;
+  }
+
+  chatHistoryList.innerHTML = "";
+  items.forEach((item) => {
+    const button = document.createElement("button");
+    button.className = "chat-history-item";
+    button.type = "button";
+    button.dataset.id = item.id;
+    button.innerHTML = `
+      <span class="chat-history-main">
+        <strong>${escapeHtml(item.title || "Cuộc trò chuyện mới")}</strong>
+        <em>${escapeHtml(summarizeText(item.summary || "Chưa có tóm tắt"))}</em>
+      </span>
+      <span class="chat-history-meta">
+        <span>${item.message_count || 0} tin nhắn</span>
+        <span>${escapeHtml(item.client_id || "-")}</span>
+        <span>${formatDateTime(item.updated_at)}</span>
+      </span>
+    `;
+    button.addEventListener("click", () => openChatHistoryModal(item.id));
+    chatHistoryList.appendChild(button);
+  });
+}
+
+async function loadChatHistory(page = chatHistoryPage) {
+  if (!chatHistoryList) {
+    return;
+  }
+
+  chatHistoryList.innerHTML = `<p class="chat-history-empty">Đang tải lịch sử chat...</p>`;
+  chatHistoryPrevBtn.disabled = true;
+  chatHistoryNextBtn.disabled = true;
+
+  try {
+    const res = await apiFetch(
+      `/api/admin/chat-history?page=${encodeURIComponent(page)}&per_page=${CHAT_HISTORY_PER_PAGE}`,
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || "Không tải được lịch sử chat");
+    }
+    renderChatHistory(data);
+  } catch (err) {
+    chatHistoryList.innerHTML = `<p class="chat-history-empty error">Lỗi tải lịch sử chat: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function renderChatHistoryMessages(messages) {
+  if (!messages.length) {
+    chatHistoryMessages.innerHTML = `<p class="chat-history-empty">Cuộc hội thoại này chưa có tin nhắn.</p>`;
+    return;
+  }
+
+  chatHistoryMessages.innerHTML = "";
+  messages.forEach((message) => {
+    const article = document.createElement("article");
+    article.className = `chat-transcript-message ${message.role === "user" ? "user" : "assistant"}`;
+
+    const imageHtml = message.image_path
+      ? `<a href="${escapeHtml(message.image_path)}" target="_blank" rel="noreferrer">
+          <img src="${escapeHtml(message.image_path)}" alt="Hình ảnh" />
+        </a>`
+      : "";
+    const analysisHtml = message.analysis_summary
+      ? `<div class="chat-analysis">${escapeHtml(message.analysis_summary)}</div>`
+      : "";
+
+    article.innerHTML = `
+      <div class="chat-message-head">
+        <strong>${message.role === "user" ? "Người dùng" : "Chatbox"}</strong>
+        <span>${formatDateTime(message.created_at)}</span>
+      </div>
+      ${imageHtml}
+      <p>${escapeHtml(message.content)}</p>
+      ${analysisHtml}
+    `;
+    chatHistoryMessages.appendChild(article);
+  });
+}
+
+async function openChatHistoryModal(conversationId) {
+  chatHistoryModal.hidden = false;
+  chatHistoryModalTitle.textContent = "Đang tải lịch sử chat...";
+  chatHistoryModalMeta.textContent = "";
+  chatHistoryMessages.innerHTML = `<p class="chat-history-empty">Đang tải nội dung chat...</p>`;
+
+  try {
+    const res = await apiFetch(`/api/admin/chat-history/${encodeURIComponent(conversationId)}`);
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || "Không tải được nội dung chat");
+    }
+
+    const conversation = data.conversation || {};
+    chatHistoryModalTitle.textContent = conversation.title || "Cuộc trò chuyện mới";
+    chatHistoryModalMeta.textContent = [
+      `Client: ${conversation.client_id || "-"}`,
+      `${conversation.message_count || 0} tin nhắn`,
+      `ập nhật: ${formatDateTime(conversation.updated_at)}`,
+    ].join(" - ");
+    renderChatHistoryMessages(data.messages || []);
+  } catch (err) {
+    chatHistoryModalTitle.textContent = "Lỗi tải nội dung chat";
+    chatHistoryMessages.innerHTML = `<p class="chat-history-empty error">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function closeChatHistoryModal() {
+  chatHistoryModal.hidden = true;
+}
+
+refreshChatHistoryBtn?.addEventListener("click", () => loadChatHistory(chatHistoryPage));
+chatHistoryPrevBtn?.addEventListener("click", () => loadChatHistory(Math.max(1, chatHistoryPage - 1)));
+chatHistoryNextBtn?.addEventListener("click", () => loadChatHistory(Math.min(chatHistoryTotalPages, chatHistoryPage + 1)));
+closeChatHistoryModalBtn?.addEventListener("click", closeChatHistoryModal);
+chatHistoryModal?.addEventListener("click", (event) => {
+  if (event.target === chatHistoryModal) {
+    closeChatHistoryModal();
+  }
+});
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && chatHistoryModal && !chatHistoryModal.hidden) {
+    closeChatHistoryModal();
+  }
+});
+
 function renderLLMStatus(data) {
   const backendLabels = {
     openai: "OpenAI GPT",
@@ -353,6 +540,7 @@ saveLLMBtn.addEventListener("click", async () => {
   }
 });
 
-setStatus("Dang khoi dong admin.js...");
+setStatus("Starting admin.js...");
 loadPipeline();
 loadLLMSettings();
+loadChatHistory(1);

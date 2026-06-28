@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import or_, select, update
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session
 
 from ..db.models import (
@@ -72,6 +72,45 @@ def list_conversations(
         .offset(offset)
     )
     return list(db.execute(stmt).scalars().all())
+
+
+def count_admin_conversations(db: Session) -> int:
+    stmt = select(func.count(Conversation.id)).where(Conversation.is_deleted.is_(False))
+    return db.execute(stmt).scalar_one()
+
+
+def list_admin_conversations(
+    db: Session,
+    limit: int = 20,
+    offset: int = 0,
+) -> list[tuple[Conversation, int]]:
+    stmt = (
+        select(Conversation, func.count(Message.id).label("message_count"))
+        .outerjoin(Message, Message.conversation_id == Conversation.id)
+        .where(Conversation.is_deleted.is_(False))
+        .group_by(Conversation.id)
+        .order_by(Conversation.updated_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    return [(conversation, int(message_count or 0)) for conversation, message_count in db.execute(stmt).all()]
+
+
+def get_admin_conversation(db: Session, conversation_id: str) -> tuple[Conversation, int] | None:
+    stmt = (
+        select(Conversation, func.count(Message.id).label("message_count"))
+        .outerjoin(Message, Message.conversation_id == Conversation.id)
+        .where(
+            Conversation.id == conversation_id,
+            Conversation.is_deleted.is_(False),
+        )
+        .group_by(Conversation.id)
+    )
+    row = db.execute(stmt).one_or_none()
+    if row is None:
+        return None
+    conversation, message_count = row
+    return conversation, int(message_count or 0)
 
 
 def search_conversations(
@@ -237,6 +276,12 @@ def conversation_to_dict(conversation: Conversation) -> dict:
         "created_at": dt(conversation.created_at),
         "updated_at": dt(conversation.updated_at),
     }
+
+
+def admin_conversation_to_dict(conversation: Conversation, message_count: int = 0) -> dict:
+    result = conversation_to_dict(conversation)
+    result["message_count"] = message_count
+    return result
 
 
 def get_active_registry_config(db: Session) -> ModelRegistryConfig | None:
